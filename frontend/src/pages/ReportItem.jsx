@@ -41,7 +41,7 @@ function ReportItem() {
       Object.keys(form).forEach((key) => data.append(key, form[key]));
       if (imageFile) data.append("image", imageFile);
 
-      await api.post("/api/items", data);
+      await api.post("/items", data);
 
       alert("Item reported successfully!");
       navigate("/items");
