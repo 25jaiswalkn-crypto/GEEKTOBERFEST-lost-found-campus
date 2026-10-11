@@ -5,12 +5,16 @@ const claimSchema = new mongoose.Schema(
     {
         item: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user",
+            ref: "Item",
             required: true
         },
         claimant: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user",
+            ref: "User",
+            required: true
+        },
+        message: {
+            type: String,
             required: true
         },
         status: {
@@ -18,7 +22,8 @@ const claimSchema = new mongoose.Schema(
             enum: ['pending', 'approved', 'rejected'],
             default: 'pending'
         }
-    }
+    },
+    { timestamps: true }
 )
 
-module.exports = mongoose.model('Claim',claimSchema)
+module.exports = mongoose.model('Claim', claimSchema)

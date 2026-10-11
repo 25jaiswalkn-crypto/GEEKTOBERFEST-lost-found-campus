@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import api from "../services/api";
 
 function Claims() {
@@ -7,6 +7,7 @@ function Claims() {
 
   const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     fetchClaims();
@@ -31,33 +32,69 @@ function Claims() {
     status
   ) => {
     try {
+      setUpdatingId(claimId);
       await api.patch(
         `/claims/${claimId}`,
         { status }
       );
 
-      fetchClaims();
+      await fetchClaims();
     } catch (error) {
       alert(
         error.response?.data?.message ||
           "Failed to update claim"
       );
+    } finally {
+      setUpdatingId(null);
     }
   };
 
   if (loading) {
     return (
-      <div className="p-10">
+      <div className="p-10 text-center">
         Loading claims...
       </div>
     );
   }
 
+  const itemTitle = claims[0]?.item?.title;
+  const itemStatus = claims[0]?.item?.status;
+  const hasApprovedClaim = claims.some((c) => c.status === "approved");
+  const canApprove = itemStatus === "active" && !hasApprovedClaim;
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="mb-8 text-3xl font-bold">
-        Item Claims
-      </h1>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">
+            Item Claims
+          </h1>
+          {itemTitle && (
+            <p className="mt-1 text-gray-600">
+              Claims for: <span className="font-semibold">{itemTitle}</span>
+            </p>
+          )}
+        </div>
+
+        <Link
+          to={`/items/${id}`}
+          className="rounded-lg border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          Back to Item
+        </Link>
+      </div>
+
+      {itemStatus === "claimed" && (
+        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-800">
+          This item is marked as <strong>Claimed</strong>. Further claim approvals are disabled.
+        </div>
+      )}
+
+      {itemStatus === "recovered" && (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
+          This item is marked as <strong>Recovered</strong>. Claim approvals are disabled.
+        </div>
+      )}
 
       {claims.length === 0 ? (
         <div className="rounded-lg bg-gray-100 p-8 text-center">
@@ -75,7 +112,15 @@ function Claims() {
                   {claim.claimant?.name}
                 </h2>
 
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-sm">
+                <span
+                  className={`rounded-full px-3 py-1 text-sm font-medium capitalize ${
+                    claim.status === "approved"
+                      ? "bg-green-100 text-green-700"
+                      : claim.status === "rejected"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
                   {claim.status}
                 </span>
               </div>
@@ -87,25 +132,35 @@ function Claims() {
               {claim.status === "pending" && (
                 <div className="flex gap-3">
                   <button
+                    disabled={!canApprove || updatingId === claim._id}
                     onClick={() =>
                       updateClaim(
                         claim._id,
                         "approved"
                       )
                     }
-                    className="rounded-lg bg-green-600 px-4 py-2 text-white"
+                    className={`rounded-lg px-4 py-2 text-white ${
+                      !canApprove || updatingId === claim._id
+                        ? "cursor-not-allowed bg-gray-400"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
                   >
-                    Approve
+                    {updatingId === claim._id ? "Processing..." : "Approve"}
                   </button>
 
                   <button
+                    disabled={updatingId === claim._id}
                     onClick={() =>
                       updateClaim(
                         claim._id,
                         "rejected"
                       )
                     }
-                    className="rounded-lg bg-red-600 px-4 py-2 text-white"
+                    className={`rounded-lg px-4 py-2 text-white ${
+                      updatingId === claim._id
+                        ? "cursor-not-allowed bg-gray-400"
+                        : "bg-red-600 hover:bg-red-700"
+                    }`}
                   >
                     Reject
                   </button>
