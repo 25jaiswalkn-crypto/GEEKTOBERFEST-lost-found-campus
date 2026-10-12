@@ -179,7 +179,17 @@ function ItemDetails() {
 
             <div>
               <strong>Status:</strong>{" "}
-              {item.status}
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                  item.status === "claimed"
+                    ? "bg-blue-100 text-blue-700"
+                    : item.status === "recovered"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {item.status}
+              </span>
             </div>
 
             <div>
@@ -205,10 +215,10 @@ function ItemDetails() {
                 Delete
               </button>
 
-              {item.status !== "recovered" && (
+              {item.status === "active" && (
                 <button
                   onClick={handleRecovered}
-                  className="rounded-lg bg-green-600 px-5 py-2 text-white"
+                  className="rounded-lg bg-green-600 px-5 py-2 text-white hover:bg-green-700"
                 >
                   Mark Recovered
                 </button>

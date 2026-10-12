@@ -42,10 +42,11 @@ const itemSchema = new mongoose.Schema(
         },
         reportedBy: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user",
+            ref: "User",
             required: true
         }
-    }
+    },
+    { timestamps: true }
 )
 
-module.exports = mongoose.model('Item',itemSchema)
+module.exports = mongoose.model('Item', itemSchema)
