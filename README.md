@@ -123,32 +123,32 @@ The backend supports authentication, item management, and claim management.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| POST | `/auth/register` | Register a user |
-| POST | `/auth/login` | Log in |
-| GET | `/auth/me` | Get the current user's details |
+| POST | `/api/auth/register` | Register a user |
+| POST | `/api/auth/login` | Log in |
+| GET | `/api/auth/me` | Get the current user's details |
 
 ### Items
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/items` | Browse items with supported filters |
-| GET | `/items/:id` | View item details |
-| POST | `/items` | Report an item |
-| PUT | `/items/:id` | Edit your own item |
-| PATCH | `/items/:id/status` | Update your item's status |
-| DELETE | `/items/:id` | Delete your own item |
+| GET | `/api/items` | Browse items with supported filters |
+| GET | `/api/items/:id` | View item details |
+| POST | `/api/items` | Report an item |
+| PUT | `/api/items/:id` | Edit your own item |
+| PATCH | `/api/items/:id/status` | Update your item's status |
+| DELETE | `/api/items/:id` | Delete your own item |
 
 ### Claims
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| POST | `/items/:itemId/claims` | Submit a claim |
-| GET | `/items/:itemId/claims` | View claims on your own item |
-| PATCH | `/claims/:id` | Approve or reject a claim |
+| POST | `/api/items/:itemId/claims` | Submit a claim |
+| GET | `/api/items/:itemId/claims` | View claims on your own item |
+| PATCH | `/api/claims/:id` | Approve or reject a claim |
 
 Protected endpoints require a valid JWT Bearer token. Item creation uses multipart form data when an image is uploaded.
 
-The backend currently supports both the routes shown above and corresponding `/api`-prefixed routes.
+All backend endpoints use the `/api` prefix.
 
 ## Project Structure
 
