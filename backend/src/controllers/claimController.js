@@ -157,3 +157,52 @@ const updateClaim = async (req, res) => {
 };
 
 module.exports = { getClaims, updateClaim, createClaim };
+// Example using MongoDB Session / Mongoose Transaction
+const approveClaim = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const claimId = req.params.id;
+    const claim = await Claim.findById(claimId).session(session);
+
+    if (!claim) {
+      await session.abortTransaction();
+      return res.status(404).json({ message: "Claim not found" });
+    }
+
+    // 1. Fetch item with session to lock/check status
+    const item = await Item.findById(claim.itemId).session(session);
+
+    // 2. Reject if item is already claimed or resolved
+    if (item.status === "resolved" || item.status === "claimed") {
+      await session.abortTransaction();
+      return res.status(409).json({ 
+        message: "Conflict: This item has already been claimed/resolved." 
+      });
+    }
+
+    // 3. Update Item & Claim statuses atomically
+    item.status = "resolved";
+    claim.status = "approved";
+
+    await item.save({ session });
+    await claim.save({ session });
+
+    // 4. Reject all other pending claims for this item
+    await Claim.updateMany(
+      { itemId: item._id, _id: { $ne: claimId }, status: "pending" },
+      { status: "rejected" },
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({ message: "Claim approved successfully" });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({ message: "Server error during approval" });
+  }
+};
