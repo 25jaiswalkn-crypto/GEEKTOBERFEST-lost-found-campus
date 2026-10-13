@@ -150,6 +150,8 @@ Protected endpoints require a valid JWT Bearer token. Item creation uses multipa
 
 All backend endpoints use the `/api` prefix.
 
+Optional item images must be JPEG, PNG, WebP, or GIF files no larger than 5 MB. Unsupported image types return `415`, and oversized images return `413`.
+
 ## Project Structure
 
 ```text

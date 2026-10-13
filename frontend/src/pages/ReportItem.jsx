@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api, {
+  ALLOWED_IMAGE_TYPES,
+  getImageValidationError,
+} from "../services/api";
 
 function ReportItem() {
   const navigate = useNavigate();
@@ -18,6 +21,7 @@ function ReportItem() {
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [imageError, setImageError] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,12 +30,27 @@ function ReportItem() {
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const validationError = getImageValidationError(file);
+    if (validationError) {
+      setImageFile(null);
+      setPreview("");
+      setImageError(validationError);
+      setError(validationError);
+      e.target.value = "";
+      return;
+    }
+
+    setImageError("");
+    setError("");
     setImageFile(file);
     setPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (imageError) return;
 
     try {
       setLoading(true);
@@ -163,7 +182,7 @@ function ReportItem() {
           <label className="mb-2 block font-medium">Image (optional)</label>
           <input
             type="file"
-            accept="image/*"
+            accept={ALLOWED_IMAGE_TYPES.join(",")}
             onChange={handleImage}
             className="w-full rounded-lg border px-4 py-3"
           />
