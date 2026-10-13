@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import api from "../services/api";
+import api, {
+  ALLOWED_IMAGE_TYPES,
+  getImageValidationError,
+} from "../services/api";
 
 function EditItem() {
   const { id } = useParams();
@@ -10,6 +13,7 @@ function EditItem() {
   const [form, setForm] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState("");
+  const [imageError, setImageError] = useState("");
 
   useEffect(() => {
     fetchItem();
@@ -32,12 +36,24 @@ function EditItem() {
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const validationError = getImageValidationError(file);
+    if (validationError) {
+      setImageFile(null);
+      setImageError(validationError);
+      e.target.value = "";
+      return;
+    }
+
+    setImageError("");
     setImageFile(file);
     setPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (imageError) return;
 
     try {
       const data = new FormData();
@@ -141,10 +157,13 @@ function EditItem() {
           </label>
           <input
             type="file"
-            accept="image/*"
+            accept={ALLOWED_IMAGE_TYPES.join(",")}
             onChange={handleImage}
             className="w-full rounded-lg border p-3"
           />
+          {imageError && (
+            <p className="mt-2 text-sm text-red-600">{imageError}</p>
+          )}
           {preview && (
             <img
               src={preview}
